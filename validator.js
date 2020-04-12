@@ -101,10 +101,13 @@ done = () => {
     let additionalTags = tags.filter(tag => basicRequiredTags.indexOf(tag) === -1);
     let date = new Date();
     let errorCount = pages.reduce((a, v) => { return (v.validation && v.validation.messages.length > 0) ? a + 1 : a; }, 0);
+    let notFoundCount = pages.reduce((a, v) => { return (v.content === '') ? a + 1 : a; }, 0);
     let pageDetails = pages.map(page => {
       return (page.content === '') ? `<section style="padding-bottom: 1em; border-bottom: 1px dashed #222; margin-bottom: 2em;">
       <h3 style="font-weight: normal; margin: 0;">404 (${page.href.replace(baseURL, '')})</h3>
       <dl>
+        <dt style="float: left; margin-right: 0.25em; color: #069;">Nombres de archivos y carpetas adecuado:</dt>
+        <dd>${page.href === page.href.replace(/[^a-z0-9-_\/\.:]/g, "").toLowerCase() ? 'Sí' : 'No'}</dd>
         <dt style="float: left; margin-right: 0.25em; color: #069;">URL:</dt>
         <dd><a href="${page.href}" target="_blank">${page.href}</a></dd>
       </dl>
@@ -117,6 +120,8 @@ done = () => {
           <dd>${filterTags(page.tags).join(', ')}</dd>
           <dt style="float: left; margin-right: 0.25em; color: #069;">Páginas linkeadas:</dt>
           <dd>${page.links.join(', ')}</dd>
+          <dt style="float: left; margin-right: 0.25em; color: #069;">Nombres de archivos y carpetas adecuado:</dt>
+          <dd>${page.href === page.href.replace(/[^a-z0-9-_\/\.:]/g, "").toLowerCase() ? 'Sí' : 'No'}</dd>
           <dt style="float: left; margin-right: 0.25em; color: #069;">URL:</dt>
           <dd><a href="${page.href}" target="_blank">${page.href}</a></dd>
         </dl>
@@ -138,6 +143,8 @@ done = () => {
             <dd>${pages.length}</dd>
             <dt style="float: left; margin-right: 0.25em; color: #069;">Páginas con errores de validación:</dt>
             <dd>${errorCount}</dd>
+            <dt style="float: left; margin-right: 0.25em; color: #069;">Páginas no encontradas:</dt>
+            <dd>${notFoundCount}</dd>
             <dt style="float: left; margin-right: 0.25em; color: #069;">Cantidad de etiquetas utilizadas:</dt>
             <dd>${tags.length}</dd>
             <dt style="float: left; margin-right: 0.25em; color: #069;">Etiquetas:</dt>
