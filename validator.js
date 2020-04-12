@@ -1,17 +1,15 @@
 const fs = require('fs')
 const axios = require('axios').default;
 
-const BASE_URL = 'http://hipermedial.surwww.com/2020/garber_leandro/tp0/';
-const INDEX = "index.html";
+let baseURL = 'http://hipermedial.surwww.com/2020/';
 
 const pages = [];
 const commonTags = [ 'html', 'head', 'meta', 'link', 'title', 'body' ];
 const basicRequiredTags = [ 'h1', 'p', 'em', 'strong', 'img', 'a', 'ul', 'li' ];
 
-addPage = (page, baseURL) => {
-  let url = new URL(page, baseURL);
+addPage = (page, fromURL) => {
+  let url = new URL(page, fromURL);
   if(!pages.find(page => page.href === url.href)) {
-    console.log(url)
     let currentPage = pages.length;
     pages.push({ href: url.href, tags: [], content: '', parsed: false, validation: null, links: [] });
     
@@ -34,6 +32,9 @@ addPage = (page, baseURL) => {
         done();
 
       });
+    }).catch(e => {
+      pages[currentPage].parsed = true;
+      done();
     })
 
   }
@@ -93,16 +94,22 @@ done = () => {
   if(!pages.find(page => !page.parsed)) {
     console.log("Paginas analizadas.");
     let title = getTitle(pages[0].content);
-    let fileName = getFileName(BASE_URL);
+    let fileName = getFileName(pages[0].href);
     let author = fileName.replace('_', ' ');
     let tags = [...getAllTags()];
     let unusedTags = basicRequiredTags.filter(tag => tags.indexOf(tag) === -1);
     let additionalTags = tags.filter(tag => basicRequiredTags.indexOf(tag) === -1);
     let date = new Date();
-    let errorCount = pages.reduce((a, v) => { return (v.validation.messages.length > 0) ? a + 1 : a; }, 0);
+    let errorCount = pages.reduce((a, v) => { return (v.validation && v.validation.messages.length > 0) ? a + 1 : a; }, 0);
     let pageDetails = pages.map(page => {
-      return `<section style="padding-bottom: 1em; border-bottom: 1px dashed #222; margin-bottom: 2em;">
-        <h3 style="font-weight: normal; margin: 0;">${getTitle(page.content)} (${page.href.replace(BASE_URL, '')})</h3>
+      return (page.content === '') ? `<section style="padding-bottom: 1em; border-bottom: 1px dashed #222; margin-bottom: 2em;">
+      <h3 style="font-weight: normal; margin: 0;">404 (${page.href.replace(baseURL, '')})</h3>
+      <dl>
+        <dt style="float: left; margin-right: 0.25em; color: #069;">URL:</dt>
+        <dd><a href="${page.href}" target="_blank">${page.href}</a></dd>
+      </dl>
+    </section>` : `<section style="padding-bottom: 1em; border-bottom: 1px dashed #222; margin-bottom: 2em;">
+        <h3 style="font-weight: normal; margin: 0;">${getTitle(page.content)} (${page.href.replace(baseURL, '')})</h3>
         <dl>
           <dt style="float: left; margin-right: 0.25em; color: #069;">Valida correctamente:</dt>
           <dd><a href="https://validator.w3.org/nu/?doc=${encodeURIComponent(page.href)}" target="_blank">${page.validation.messages.length === 0 ? 'Sí' : 'No'}</a></dd>
@@ -159,4 +166,16 @@ done = () => {
   }
 }
 
-addPage(INDEX, BASE_URL);
+const readline = require("readline");
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
+
+rl.question("Ingrese la URL principal: ", url => {
+    rl.question("Ingrese el nombre del archivo index: ", index => {
+        baseURL = url;
+        addPage(index, url);
+        rl.close();
+    });
+});
