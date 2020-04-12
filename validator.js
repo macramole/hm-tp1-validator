@@ -160,6 +160,3 @@ done = () => {
 }
 
 addPage(INDEX, BASE_URL);
-
-
-// fs.writeFileSync('hello.txt', 'hola como va??')
