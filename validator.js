@@ -54,7 +54,7 @@ getTags = (page) => {
 }
 
 getLinks = (page) => {
-  let re = /<a.+?href=["']((?!(http:\/\/|https:\/\/)).+?(\/|.html|.htm))["']/ig;
+  let re = /<a.+?href *?= *?["']((?!(http:\/\/|https:\/\/)).+?(\/|.html|.htm))["']/ig;
   let links = [];
   let match;
   while ((match = re.exec(page)) != null) {
