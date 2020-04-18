@@ -68,11 +68,16 @@ getTags = (page) => {
 }
 
 getLinks = (page) => {
-  let re = /<a.+?href *?= *?["']((?!(http:\/\/|https:\/\/)).+?(\/|.html|.htm))["']/ig;
+  // let re = /<a.+?href *?= *?["']((?!(http:\/\/|https:\/\/)).+?(\/|.html|.htm))["']/ig;
+  let re = /<a.+?href *?= *?["'](.+?(\/|.html|.htm))["']/ig;
   let links = [];
   let match;
   while ((match = re.exec(page)) != null) {
-    links.push(match[1]);
+    if(!match[1].startsWith('http://') && !match[1].startsWith('https://')) {
+      links.push(match[1]);
+    } else if(match[1].startsWith(baseURL)) {
+      links.push(match[1]);
+    }
   }
   return links;
 }
@@ -211,7 +216,8 @@ app.get("/", (req,res) => {
         }
     }
 
-    console.log( finalUrl )
+    baseURL = finalUrl;
+    //console.log( finalUrl )
 
     addPage(finalPage, finalUrl, res)
 })
