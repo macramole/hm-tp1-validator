@@ -34,6 +34,20 @@ addPage = (page, fromURL, res) => {
             .then(response => {
                 pages[currentPage].validation = response.data;
                 pages[currentPage].parsed = true;
+                pages[currentPage].validationErrors = 0;
+                pages[currentPage].validationWarnings = 0;
+
+
+                if ( response.data["messages"] ) {
+                  for ( let m of response.data["messages"] ) {
+                    if ( m.type == "info" ) {
+                      pages[currentPage].validationWarnings += 1;
+                    }
+                    if ( m.type == "error" ) {
+                      pages[currentPage].validationErrors += 1;
+                    }
+                  }
+                }
 
                 // Navigate to internal links
                 for(let i = 0; i < pages[currentPage].links.length; i++) {
@@ -134,7 +148,10 @@ done = () => {
         <h3 style="font-weight: normal; margin: 0;">${getTitle(page.content)} (${page.href.replace(baseURL, '')})</h3>
         <dl>
           <dt style="float: left; margin-right: 0.25em; color: #069;">Valida correctamente:</dt>
-          <dd><a href="https://validator.w3.org/nu/?doc=${encodeURIComponent(page.href)}" target="_blank">${page.validation.messages.length === 0 ? 'Sí' : 'No'}</a></dd>
+          <dd>
+            <a href="https://validator.w3.org/nu/?doc=${encodeURIComponent(page.href)}" target="_blank">${page.validation.messages.length === 0 ? 'Sí' : 'No'}</a>
+            (${page.validationErrors} errores, ${page.validationWarnings} advertencias)
+          </dd>
           <dt style="float: left; margin-right: 0.25em; color: #069;">Etiquetas utilizadas:</dt>
           <dd>${filterTags(page.tags).join(', ')}</dd>
           <dt style="float: left; margin-right: 0.25em; color: #069;">Páginas linkeadas:</dt>
